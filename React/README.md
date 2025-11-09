@@ -1,61 +1,61 @@
-# Estudo de Programação Web - React
+# React - Estudos e Práticas
 
-## 📚 Sobre o Repositório
+## 📋 Visão Geral
 
-Este repositório foi criado com o objetivo de documentar e praticar meus conhecimentos e aprendizados sobre as tecnologias JavaScript, com foco especial em **React**. Aqui você encontrará projetos práticos, exercícios e exemplos que demonstram a evolução do aprendizado e a aplicação dos conceitos estudados.
+Este diretório contém projetos práticos e exercícios relacionados ao aprendizado de **React**, uma das principais bibliotecas JavaScript para construção de interfaces de usuário modernas e interativas.
 
 ## 🎯 Objetivo
 
-O propósito principal deste repositório é:
-- **Praticar** conceitos fundamentais e avançados de React
-- **Documentar** o processo de aprendizado e descobertas
-- **Criar** projetos práticos que consolidem o conhecimento adquirido
-- **Compartilhar** exemplos de código e soluções encontradas durante os estudos
+Praticar e consolidar conhecimentos em React através de projetos hands-on, desde conceitos fundamentais até tópicos mais avançados, sempre com foco em aplicações práticas e reais.
 
-## 🚀 Projetos Práticos
+## 🚀 Projetos
 
 ### Components-1
 
-O primeiro projeto prático do repositório, focado nos fundamentos de componentes React.
+Primeiro projeto prático focado nos fundamentos de componentes React.
 
-**Localização**: `Components-1/`
+**Conceitos abordados:**
+- Componentes funcionais
+- Importação/exportação de módulos
+- JSX e renderização
+- Estrutura básica com Vite
 
-Este projeto introduz os conceitos básicos de:
-- Criação de componentes funcionais
-- Importação e exportação de módulos
-- Estrutura básica de uma aplicação React com Vite
-- Renderização de componentes
+📖 [Documentação completa](./Components-1/Doc.md)
 
-Para mais detalhes, consulte a [documentação do Components-1](./Components-1/Doc.md).
+## 🛠️ Stack Tecnológica
 
-## 🛠️ Tecnologias
+- **React** - Biblioteca para interfaces de usuário
+- **Vite** - Build tool e dev server
+- **JavaScript (ES6+)** - Linguagem base
 
-Este repositório utiliza principalmente:
-- **React** - Biblioteca JavaScript para construção de interfaces de usuário
-- **Vite** - Ferramenta de build e desenvolvimento
-- **JavaScript (ES6+)** - Linguagem de programação
-
-## 📝 Estrutura
+## 📁 Estrutura
 
 ```
 React/
-├── Components-1/      # Primeiro projeto: Fundamentos de Componentes
-├── README.md          # Este arquivo
-└── [outros projetos]  # Projetos futuros serão adicionados aqui
+├── Components-1/    # Fundamentos de Componentes
+├── README.md        # Este arquivo
+└── [projetos futuros]
 ```
 
-## 📖 Como Usar
+## 🔮 Expansões Futuras
 
-Cada projeto prático possui sua própria documentação no arquivo `Doc.md` dentro do respectivo diretório. Para executar um projeto:
+Este repositório está em constante crescimento. Futuramente serão incluídos:
 
-1. Navegue até o diretório do projeto
-2. Instale as dependências: `npm install`
-3. Execute o servidor de desenvolvimento: `npm run dev`
+- **Node.js** - Desenvolvimento backend e APIs
+- **Base de Dados** - Integração com bancos de dados (SQL e NoSQL)
+- Projetos full-stack combinando React, Node e banco de dados
 
-## 🎓 Aprendizado Contínuo
+## 📖 Como Executar
 
-Este repositório está em constante evolução, refletindo o progresso contínuo no aprendizado de React e tecnologias relacionadas. Novos projetos e conceitos serão adicionados conforme o conhecimento avança.
+Cada projeto possui sua própria documentação. Em geral:
+
+```bash
+cd [nome-do-projeto]
+npm install
+npm run dev
+```
 
 ---
 
-**Nota**: Este é um repositório de estudos pessoais, criado para fins educacionais e de prática.
+*Repositório de estudos pessoais - Aprendizado contínuo em desenvolvimento web*
+

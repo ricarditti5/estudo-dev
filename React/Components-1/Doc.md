@@ -24,19 +24,73 @@ Components-1/
 - **Props e Estado**: Uso de variáveis dentro de componentes (preparação para props)
 - **Renderização**: Uso do `createRoot` do React 18+ para renderizar a aplicação
 
-## Como Executar
+## Instalação e Compilação
 
-1. Instale as dependências (se ainda não instalou):
-   ```bash
-   npm install
-   ```
+### Pré-requisitos
 
-2. Inicie o servidor de desenvolvimento:
+- **Node.js** (versão 16 ou superior)
+- **npm** (geralmente vem com o Node.js)
+
+### Criando o package.json
+
+Se você está começando um novo projeto, primeiro precisa criar o arquivo `package.json`:
+
+```bash
+npm init -y
+```
+
+Este comando cria um `package.json` básico com valores padrão. Em seguida, você precisa instalar as dependências do projeto:
+
+```bash
+# Instalar React e React DOM
+npm install react react-dom
+
+# Instalar Vite e o plugin do React como dependências de desenvolvimento
+npm install -D vite @vitejs/plugin-react
+```
+
+### Instalação das Dependências (Projeto Existente)
+
+Se você já possui um `package.json` (como neste projeto), para instalar todas as dependências necessárias, execute:
+
+```bash
+npm install
+```
+
+Este comando irá:
+- Ler o arquivo `package.json`
+- Instalar o React e suas dependências
+- Instalar o Vite e o plugin do React
+- Criar a pasta `node_modules` com todas as dependências
+- Gerar o arquivo `package-lock.json` (se ainda não existir)
+
+**Nota**: O `package-lock.json` garante que as mesmas versões das dependências sejam instaladas em diferentes ambientes.
+
+### Compilação e Execução
+
+1. **Modo de Desenvolvimento** (recomendado para desenvolvimento):
    ```bash
    npm run dev
    ```
+   - Inicia o servidor de desenvolvimento do Vite
+   - Compila o projeto automaticamente
+   - Recarrega a página automaticamente ao fazer alterações (hot reload)
+   - Acesse a aplicação em `http://localhost:5173`
 
-3. Acesse a aplicação no navegador (geralmente em `http://localhost:5173`)
+2. **Build para Produção** (para criar versão otimizada):
+   ```bash
+   npm run build
+   ```
+   - Compila e otimiza o projeto para produção
+   - Gera arquivos estáticos na pasta `dist/`
+   - Pronto para deploy em servidores web
+
+3. **Preview da Build de Produção**:
+   ```bash
+   npm run preview
+   ```
+   - Pré-visualiza a versão de produção localmente
+   - Útil para testar antes de fazer deploy
 
 ## Tecnologias Utilizadas
 
