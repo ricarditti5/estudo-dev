@@ -20,7 +20,7 @@ Primeiro projeto prático focado nos fundamentos de componentes React.
 - JSX e renderização
 - Estrutura básica com Vite
 
-📖 [Documentação completa](./Components-1/Doc.md)
+📖 [Documentação completa](./React/Components-1/Doc.md)
 
 ## 🛠️ Stack Tecnológica
 
