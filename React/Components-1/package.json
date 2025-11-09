@@ -1,0 +1,17 @@
+
+{
+  "name": "components-1",
+  "version": "1.0.0",
+
+  "scripts": {
+    "dev": "vite" 
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",          
+    "@vitejs/plugin-react": "^4.0.0" 
+  }
+}
