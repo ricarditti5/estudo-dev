@@ -28,7 +28,7 @@ Components-1/
 
 ### Pré-requisitos
 
-- **Node.js** (versão 16 ou superior)
+- **Node.js** (versão 18 ou superior)
 - **npm** (geralmente vem com o Node.js)
 
 ### Criando o package.json
@@ -65,6 +65,18 @@ Este comando irá:
 - Gerar o arquivo `package-lock.json` (se ainda não existir)
 
 **Nota**: O `package-lock.json` garante que as mesmas versões das dependências sejam instaladas em diferentes ambientes.
+
+### Scripts no package.json
+
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  }
+}
+```
 
 ### Compilação e Execução
 
