@@ -57,6 +57,8 @@ npm run dev
 
 O servidor iniciará na porta **3000** (configurada no `vite.config.js`) e abrirá automaticamente no navegador.
 
+**⚠️ IMPORTANTE**: Sempre execute `npm install` primeiro antes de executar `npm run dev`. Se você ver o erro `vite: not found`, significa que as dependências não estão instaladas.
+
 **Nota**: O `package-lock.json` garante que as mesmas versões das dependências sejam instaladas em diferentes ambientes.
 
 ### Comandos Disponíveis
