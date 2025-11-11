@@ -31,28 +31,14 @@ Components-1/
 - **Node.js** (versão 18 ou superior)
 - **npm** (geralmente vem com o Node.js)
 
-### Criando o package.json
+### Comandos para Deixar o Projeto Pronto
 
-Se você está começando um novo projeto, primeiro precisa criar o arquivo `package.json`:
-
+**1. Navegue até o diretório do projeto:**
 ```bash
-npm init -y
+cd React/Components-1
 ```
 
-Este comando cria um `package.json` básico com valores padrão. Em seguida, você precisa instalar as dependências do projeto:
-
-```bash
-# Instalar React e React DOM
-npm install react react-dom
-
-# Instalar Vite e o plugin do React como dependências de desenvolvimento
-npm install -D vite @vitejs/plugin-react
-```
-
-### Instalação das Dependências (Projeto Existente)
-
-Se você já possui um `package.json` (como neste projeto), para instalar todas as dependências necessárias, execute:
-
+**2. Instale as dependências:**
 ```bash
 npm install
 ```
@@ -64,21 +50,16 @@ Este comando irá:
 - Criar a pasta `node_modules` com todas as dependências
 - Gerar o arquivo `package-lock.json` (se ainda não existir)
 
-**Nota**: O `package-lock.json` garante que as mesmas versões das dependências sejam instaladas em diferentes ambientes.
-
-### Scripts no package.json
-
-```json
-{
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  }
-}
+**3. Inicie o servidor de desenvolvimento:**
+```bash
+npm run dev
 ```
 
-### Compilação e Execução
+O servidor iniciará na porta **3000** (configurada no `vite.config.js`) e abrirá automaticamente no navegador.
+
+**Nota**: O `package-lock.json` garante que as mesmas versões das dependências sejam instaladas em diferentes ambientes.
+
+### Comandos Disponíveis
 
 1. **Modo de Desenvolvimento** (recomendado para desenvolvimento):
    ```bash
@@ -87,7 +68,8 @@ Este comando irá:
    - Inicia o servidor de desenvolvimento do Vite
    - Compila o projeto automaticamente
    - Recarrega a página automaticamente ao fazer alterações (hot reload)
-   - Acesse a aplicação em `http://localhost:5173`
+   - Acesse a aplicação em `http://localhost:3000`
+   - O navegador abre automaticamente
 
 2. **Build para Produção** (para criar versão otimizada):
    ```bash
@@ -96,6 +78,7 @@ Este comando irá:
    - Compila e otimiza o projeto para produção
    - Gera arquivos estáticos na pasta `dist/`
    - Pronto para deploy em servidores web
+   - Inclui sourcemaps para debug
 
 3. **Preview da Build de Produção**:
    ```bash

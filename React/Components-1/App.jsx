@@ -1,9 +1,9 @@
-import MyComponent from "./Component"
+import MyComponent from "./Component.jsx";
 
-export default function App(){
-    return(
+export default function App() {
+    return (
         <>
-        <MyComponent/>
+            <MyComponent />
         </>
-    )
+    );
 }
