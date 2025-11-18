@@ -22,6 +22,30 @@ Primeiro projeto prático focado nos fundamentos de componentes React.
 
 📖 [Documentação completa](./React/Components-1/Doc.md)
 
+### Components-2
+
+Segundo projeto prático focado em renderização de elementos com propriedades.
+
+**Conceitos abordados:**
+- Renderização de elementos com propriedades (imagens, textos)
+- Uso de objetos JavaScript em componentes
+- Atributos JSX dinâmicos
+- Organização de dados com objetos
+
+📖 [Documentação completa](./React/Components-2/Doc.md)
+
+### Components-3
+
+Terceiro projeto prático focado em lógica JavaScript dentro de componentes React.
+
+**Conceitos abordados:**
+- Lógica JavaScript antes do return
+- Declaração de variáveis em componentes
+- Estruturas de controle (if/else, switch/case)
+- Separação entre lógica e renderização
+
+📖 [Documentação completa](./React/Components-3/Doc.md)
+
 ## 🛠️ Stack Tecnológica
 
 - **React** - Biblioteca para interfaces de usuário
@@ -33,6 +57,8 @@ Primeiro projeto prático focado nos fundamentos de componentes React.
 ```
 React/
 ├── Components-1/    # Fundamentos de Componentes
+├── Components-2/    # Componentes com Propriedades
+├── Components-3/    # Lógica em Componentes
 ├── README.md        # Este arquivo
 └── [projetos futuros]
 ```
