@@ -1,29 +1,115 @@
-# Components-2
+# Components-3
 
 ## Descrição
 
-Este é o segundo projeto prático do repositório de estudos de React. O diretório `Components-2` foi criado para praticar componentes que renderizam elementos com propriedades, como imagens e textos, demonstrando o uso de objetos JavaScript dentro de componentes React.
+Este é o terceiro projeto prático do repositório de estudos de React. O diretório `Components-3` foi criado para praticar o uso de lógica JavaScript dentro de componentes React, demonstrando como executar cálculos, operações e declarações de variáveis antes do retorno do componente.
 
 ## Estrutura do Projeto
 
 ```
-Components-2/
-├── Coruja.jsx      # Componente funcional Coruja que exibe uma imagem
-├── App.jsx         # Componente principal que importa e usa Coruja
-├── main.jsx        # Ponto de entrada da aplicação React
-├── index.html      # Arquivo HTML base
-├── vite.config.js  # Configuração do Vite para processar JSX
-└── package.json    # Dependências e scripts do projeto
+Components-3/
+├── Component-Friend.jsx  # Componente funcional que usa lógica antes do return
+├── App.jsx               # Componente principal que importa e usa ComponentFriend
+├── main.jsx              # Ponto de entrada da aplicação React
+├── index.html            # Arquivo HTML base
+├── vite.config.js        # Configuração do Vite para processar JSX
+└── package.json          # Dependências e scripts do projeto
 ```
 
 ## Conceitos Praticados
 
 - **Componentes Funcionais**: Criação de componentes usando funções JavaScript
+- **Lógica em Componentes**: Execução de lógica JavaScript antes do retorno JSX
+- **Declaração de Variáveis**: Uso de `const`, `let` e operações matemáticas
+- **Estruturas de Controle**: Preparação para uso de `if/else`, `switch/case` (fora do return)
 - **Exportação/Importação**: Uso de `export default` e `import` para modularizar código
 - **JSX**: Sintaxe JavaScript para escrever HTML dentro do código React
-- **Objetos JavaScript**: Uso de objetos para armazenar dados (como URLs de imagens)
-- **Atributos JSX**: Uso de atributos como `src` e `alt` em elementos HTML
-- **Renderização**: Uso do `createRoot` do React 18 para renderizar a aplicação
+- **Arrays e Objetos**: Manipulação de estruturas de dados antes da renderização
+
+## Lógica em Componentes React
+
+### Conceito Fundamental
+
+Em componentes React, toda a lógica JavaScript (cálculos, declarações de variáveis, estruturas condicionais) deve ser executada **antes** do `return`. O `return` deve conter apenas o JSX que será renderizado.
+
+### Exemplo Correto ✅
+
+```jsx
+function RandomNumber() {
+  // Primeiro, a lógica que deve acontecer antes do retorno
+  const n = Math.floor(Math.random() * 10 + 1);
+
+  // Depois, o return usando essa lógica
+  return <h1>{n}</h1>;
+}
+```
+
+**Por que funciona:**
+- A variável `n` é declarada e calculada antes do `return`
+- O `return` apenas usa o valor já calculado
+- A lógica está separada da renderização
+
+### Exemplo Incorreto ❌
+
+```jsx
+function RandomNumber() {
+  return (
+    const n = Math.floor(Math.random() * 10 + 1);
+    <h1>{n}</h1>
+  )
+}
+```
+
+**Por que não funciona:**
+- Declarações de variáveis (`const`, `let`, `var`) não podem estar dentro do `return`
+- O `return` só pode conter expressões JSX, não declarações
+- Isso causará um erro de sintaxe
+
+### Regras Importantes
+
+1. **Declarações de variáveis** (`const`, `let`, `var`) devem estar **fora** do `return()`
+2. **Estruturas condicionais** (`if/else`, `switch/case`) devem estar **fora** do `return()`
+3. **Cálculos e operações** devem ser executados **antes** do `return`
+4. O `return()` deve conter apenas **JSX** e **expressões JavaScript** (não declarações)
+
+### Exemplo com Estrutura Condicional
+
+```jsx
+function Greeting({ name }) {
+  // Lógica antes do return
+  let message;
+  if (name) {
+    message = `Olá, ${name}!`;
+  } else {
+    message = "Olá, visitante!";
+  }
+
+  // Return apenas com JSX
+  return <h1>{message}</h1>;
+}
+```
+
+### Exemplo com Switch/Case
+
+```jsx
+function Status({ status }) {
+  // Lógica antes do return
+  let statusText;
+  switch (status) {
+    case 'active':
+      statusText = 'Ativo';
+      break;
+    case 'inactive':
+      statusText = 'Inativo';
+      break;
+    default:
+      statusText = 'Desconhecido';
+  }
+
+  // Return apenas com JSX
+  return <p>Status: {statusText}</p>;
+}
+```
 
 ## Instalação e Compilação
 
@@ -36,7 +122,7 @@ Components-2/
 
 **1. Navegue até o diretório do projeto:**
 ```bash
-cd React/Components-2
+cd React/Components-3
 ```
 
 **2. Instale as dependências:**
@@ -56,7 +142,7 @@ Este comando irá:
 npm run dev
 ```
 
-O servidor iniciará na porta **3001** (configurada no `vite.config.js`) e abrirá automaticamente no navegador.
+O servidor iniciará na porta configurada no `vite.config.js` e abrirá automaticamente no navegador.
 
 **⚠️ IMPORTANTE**: Sempre execute `npm install` primeiro antes de executar `npm run dev`. Se você ver o erro `vite: not found`, significa que as dependências não estão instaladas.
 
@@ -71,7 +157,6 @@ O servidor iniciará na porta **3001** (configurada no `vite.config.js`) e abrir
    - Inicia o servidor de desenvolvimento do Vite
    - Compila o projeto automaticamente
    - Recarrega a página automaticamente ao fazer alterações (hot reload)
-   - Acesse a aplicação em `http://localhost:3001`
    - O navegador abre automaticamente
 
 2. **Build para Produção** (para criar versão otimizada):
@@ -98,29 +183,40 @@ O servidor iniciará na porta **3001** (configurada no `vite.config.js`) e abrir
 
 ## Componentes
 
-### Coruja
-Componente funcional que exibe uma imagem de coruja usando dados de um objeto JavaScript. O componente demonstra:
-- Uso de objetos para armazenar dados
-- Renderização de imagens com atributos `src` e `alt`
-- Interpolação de valores JavaScript no JSX
+### ComponentFriend
+Componente funcional que demonstra o uso de lógica antes do retorno. O componente:
+- Declara um array de objetos com dados de amigos
+- Seleciona um item específico do array antes do `return`
+- Renderiza o título e a imagem do amigo selecionado
 
 ### App
-Componente principal que serve como container e renderiza o componente `Coruja`.
+Componente principal que serve como container e renderiza o componente `ComponentFriend`.
 
 ## Aprendizados
 
 Este projeto demonstra:
-- Como estruturar um projeto React básico com Vite
-- Como criar e exportar componentes
-- Como importar e usar componentes em outros componentes
-- Como usar objetos JavaScript dentro de componentes
-- Como renderizar elementos HTML com atributos dinâmicos
-- Como configurar o Vite para trabalhar com React
-- A estrutura básica de uma aplicação React moderna
+- Como executar lógica JavaScript dentro de componentes React
+- A importância de separar lógica de renderização
+- Como declarar variáveis e executar cálculos antes do `return`
+- Como usar estruturas de dados (arrays, objetos) em componentes
+- A diferença entre declarações (que vão antes do return) e expressões (que podem ir no JSX)
 
-## Diferenças do Components-1
+## Diferenças dos Projetos Anteriores
 
-- Este projeto foca em renderização de elementos com propriedades (imagens)
-- Demonstra o uso de objetos para organizar dados
-- Mostra como usar atributos HTML em JSX de forma dinâmica
+### Components-1 vs Components-3
+- Components-1: Foco em componentes básicos sem lógica complexa
+- Components-3: Introduz lógica JavaScript antes do retorno
 
+### Components-2 vs Components-3
+- Components-2: Renderização de elementos com propriedades estáticas
+- Components-3: Uso de lógica para processar dados antes da renderização
+
+## Erros Comuns a Evitar
+
+⚠️ **NUNCA** coloque declarações (`const`, `let`, `var`) dentro do `return()`
+
+⚠️ **NUNCA** coloque estruturas condicionais (`if/else`, `switch/case`) diretamente no `return()` sem usar operadores ternários ou expressões
+
+✅ **SEMPRE** execute toda a lógica antes do `return`
+
+✅ **SEMPRE** use o `return()` apenas para JSX e expressões JavaScript

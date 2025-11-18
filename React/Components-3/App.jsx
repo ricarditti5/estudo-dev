@@ -1,9 +1,9 @@
-import Coruja from "./Coruja.jsx";
+import ComponentFriend from "./Component-Friend.jsx";
 
 export default function App() {
     return (
         <>
-            <Coruja />
+            <ComponentFriend />
         </>
     );
 }
