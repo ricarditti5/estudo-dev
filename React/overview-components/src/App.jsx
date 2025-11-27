@@ -7,7 +7,7 @@ function App() {
     <>
        Hello, Codecademy!
     </>
-  )
+  );
 }
 
 export default App
