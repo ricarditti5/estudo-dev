@@ -28,6 +28,91 @@ Este projeto introduz os conceitos básicos de:
 
 Para mais detalhes, consulte a [documentação do Components-1](./Components-1/Doc.md).
 
+### Components-2
+
+Segundo projeto prático focado em renderização de elementos com propriedades.
+
+**Localização**: `Components-2/`
+
+Este projeto cobre:
+- Renderização de elementos com propriedades (imagens, textos)
+- Uso de objetos JavaScript em componentes
+- Atributos JSX dinâmicos
+- Organização de dados com objetos
+
+Para mais detalhes, consulte a [documentação do Components-2](./Components-2/Doc.md).
+
+### Components-3
+
+Terceiro projeto prático focado em lógica JavaScript dentro de componentes React.
+
+**Localização**: `Components-3/`
+
+Este projeto cobre:
+- Lógica JavaScript antes do return
+- Declaração de variáveis em componentes
+- Estruturas de controle (if/else, switch/case)
+- Separação entre lógica e renderização
+
+Para mais detalhes, consulte a [documentação do Components-3](./Components-3/Doc.md).
+
+### Components-4
+
+Quarto projeto prático focado em manipulação de arrays e dados complexos.
+
+**Localização**: `Components-4/`
+
+Este projeto cobre:
+- Manipulação de Arrays de objetos
+- Acesso a dados antes da renderização
+- Seleção dinâmica de conteúdo
+- Estruturas de dados em componentes
+
+Para mais detalhes, consulte a [documentação do Components-4](./Components-4/Doc.md).
+
+### Components-5
+
+Quinto projeto prático focado em interatividade com Event Listeners.
+
+**Localização**: `Components-5/`
+
+Este projeto cobre:
+- Manipulação de eventos (onclick vs onClick)
+- Funções de Callback como handlers
+- Interatividade básica (Alerts)
+- Sintaxe de eventos no JSX
+
+Para mais detalhes, consulte a [documentação do Components-5](./Components-5/Doc.md).
+
+### overview-components
+
+Guia geral resumindo os conceitos fundamentais praticados de Components-1 a Components-5.
+
+**Localização**: `overview-components/`
+
+Este guia unifica:
+- Resumo de Variáveis e JSX
+- Objetos e propriedades dinâmicas
+- Arrays e Listas
+- Event Handlers
+- Visão unificada dos primeiros passos
+
+Para mais detalhes, consulte a [documentação geral](./overview-components/Doc.md).
+
+### Props-1
+
+Projeto focado no entendimento e uso de Props para comunicação entre componentes.
+
+**Localização**: `Props-1/`
+
+Este projeto foca em:
+- Passagem de dados (Pai para Filho)
+- Props como objeto imutável
+- Interpolação de valores (Strings vs Expressões)
+- Visualização de props com JSON.stringify
+
+Para mais detalhes, consulte a [documentação do Props-1](./Props-1/Doc.md).
+
 ## 🛠️ Tecnologias
 
 Este repositório utiliza principalmente:
@@ -39,8 +124,14 @@ Este repositório utiliza principalmente:
 
 ```
 React/
-├── Components-1/      # Primeiro projeto: Fundamentos de Componentes
-├── README.md          # Este arquivo
+├── Components-1/      # Fundamentos de Componentes
+├── Components-2/      # Componentes com Propriedades
+├── Components-3/      # Lógica em Componentes
+├── Components-4/      # Arrays e Listas
+├── Components-5/      # Event Listeners
+├── overview-components/ # Resumo Geral
+├── Props-1/           # Entendendo Props
+├── README-REACT.md    # Este arquivo
 └── [outros projetos]  # Projetos futuros serão adicionados aqui
 ```
 
