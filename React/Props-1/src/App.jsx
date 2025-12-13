@@ -1,10 +1,11 @@
 import './App.css'
+import MyProps from './MyProps';
 
 function App() {
 
   return (
     <>
-      Hello, Codecademy!
+      <MyProps Props="Hello" />
     </>
   );
 }
