@@ -2,10 +2,10 @@ package main
 
 import "fmt"
 
-var variavelExt string = "Variável externa"
+var variavel string = "Variável externa"
 
 func main() {
-	var variavelInt string = "Variável interna"
+	var variavel string = "Variável interna"
 
-	fmt.Println(variavelExt+"\n", variavelInt)
+	fmt.Println(variavel+"\n", variavel)
 }
