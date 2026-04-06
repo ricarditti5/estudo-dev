@@ -2,12 +2,14 @@ package main
 
 import "fmt"
 
-func reverseSlice(slice []int) {
-	for i := len(slice); i >= len(slice); i-- {
-		revertedSlice := slice[i-1]
+func reverseSlice(slice []int) []int {
 
-		return revertedSlice
+	revertedSlice := make([]int, 0, len(slice))
+
+	for i := len(slice) - 1; i >= 0; i-- {
+		revertedSlice = append(revertedSlice, slice[i])
 	}
+	return revertedSlice
 }
 
 func main() {
