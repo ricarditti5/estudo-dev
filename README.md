@@ -41,7 +41,6 @@ go run hello.go
 
 Este repositório está em constante refinamento e desenvolvimento. Futuramente abrangerá:
 
-- **Node.js** - Desenvolvimento backend e APIs em JavaScript.
 - **Base de Dados** - Integração com bancos de dados relacionais e não-relacionais (SQL / NoSQL).
 - **Projetos Full-Stack** - Integrando os ambientes estudados (React na ponta, Go ou Node.js no servidor, etc).
 
