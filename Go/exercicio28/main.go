@@ -3,7 +3,10 @@ package main
 import "fmt"
 
 func main() {
-	nota := 2
+	nota := 0
+	
+	fmt.Println("Diga a sua nota:")
+	fmt.Scanf("%d", &nota)
 
 	switch {
 	case nota >= 0 && nota <= 56:
