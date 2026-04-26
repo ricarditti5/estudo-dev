@@ -9,7 +9,6 @@ func main() {
 		if num%2 == 0 {
 			break
 		}
-
 		fmt.Println(num)
 	}
 }
