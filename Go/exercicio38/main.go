@@ -1,0 +1,21 @@
+package main
+
+import "fmt"
+
+func filterEven(nums []int) []int {
+	var num []int
+
+	for _, n := range nums {
+		if n%2 == 0 {
+			num = append(num, n)
+		}
+	}
+
+	return num
+}
+
+func main() {
+	a := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
+
+	fmt.Println(filterEven(a))
+}
