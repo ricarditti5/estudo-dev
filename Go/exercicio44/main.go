@@ -15,7 +15,7 @@ func printMemory() {
 func main() {
 
 	printMemory()
-	memoryAloc := make([]byte, 100*1024*1024)
+	memoryAloc := make([]int, 100*1024*1024)
 	printMemory()
 	//memoryAloc = nil
 	//runtime.GC()
