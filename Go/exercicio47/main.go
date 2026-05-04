@@ -28,6 +28,5 @@ func main() {
 			ZipCode: "4750-268",
 		},
 	}
-
 	fmt.Println("The address is: ", p.Address)
 }
