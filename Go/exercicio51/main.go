@@ -25,6 +25,9 @@ func NewRetangle(height, width float64) *Retangle {
 func (t Retangle) CalculateArea() float64 {
 	return t.Height * t.Width
 }
+func (t Retangle) CalculatePerimeter() float64 {
+	return 2 + (t.Height + t.Width)
+}
 
 func main() {
 	r := NewRetangle(4, 2.4)
@@ -38,5 +41,7 @@ func main() {
 	fmt.Println(r)
 	fmt.Println(a)
 
-	fmt.Println(a.CalculateArea())
+	fmt.Println("The area is: ", a.CalculatePerimeter())
+	fmt.Println("The Perimeter is: ", a.CalculateArea())
+
 }
