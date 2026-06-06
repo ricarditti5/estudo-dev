@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	_ "fmt"
+)
 
 type APP struct {
 	AppName string

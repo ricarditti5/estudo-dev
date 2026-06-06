@@ -1,0 +1,6 @@
+# PostgreSQL with Golang
+
+In this module i learn how to work with PostgreSQL using the programing language go/golang
+
+## First connection succefull
+![alt text](firstConn.png)
