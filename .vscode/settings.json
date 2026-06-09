@@ -1,4 +1,5 @@
 {
+  "sqlLanguageServer.enabled": false,
   "editor.quickSuggestions": {
     "other": true,
     "comments": false,
