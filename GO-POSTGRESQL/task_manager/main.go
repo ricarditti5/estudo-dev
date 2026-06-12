@@ -17,6 +17,11 @@ type Task struct {
 	ID          int
 	Title       string
 	Description string
+	Status      *string
+}
+
+type TaskFilters struct {
+	Status *string
 }
 
 type ErrTaskNotFound struct {
@@ -33,7 +38,7 @@ func NewTaskService(db *sql.DB) *TaskService {
 
 func (s *TaskService) GetTask(ctx context.Context, id int) (*Task, error) {
 	var t Task
-	err := s.DB.QueryRowContext(ctx, "SELECT id, title, description FROM tasks WHERE id = $1", id).Scan(&t.ID, &t.Title, &t.Description)
+	err := s.DB.QueryRowContext(ctx, "SELECT id, title, description, status FROM tasks WHERE id = $1", id).Scan(&t.ID, &t.Title, &t.Description, &t.Status)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, &ErrTaskNotFound{ID: id}
@@ -69,23 +74,65 @@ func (s *TaskService) UpdateTask(ctx context.Context, id int, title string) erro
 }
 
 func (s *TaskService) ListTasks(ctx context.Context) ([]Task, error) {
-	rows, err := s.DB.QueryContext(ctx, "SELECT id, title, description FROM tasks")
+	rows, err := s.DB.QueryContext(ctx, "SELECT id, title, description, status FROM tasks ORDER BY status = 'done' ASC")
 	if err != nil {
-		return nil, fmt.Errorf("Error to execute the Query %w", err)
+		return nil, fmt.Errorf("error executing query: %w", err)
 	}
 	defer rows.Close()
+
 	var tasks []Task
 	for rows.Next() {
 		var t Task
-		err := rows.Scan(&t.ID, &t.Title, &t.Description)
+		err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Status)
 		if err != nil {
-			return nil, fmt.Errorf("Error to scan row %w", err)
+			return nil, fmt.Errorf("error scanning row: %w", err)
 		}
 		tasks = append(tasks, t)
 	}
+
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("Error to iterate rows %w", err)
+		return nil, fmt.Errorf("error iterating rows: %w", err)
 	}
+
+	return tasks, nil
+}
+
+func (s *TaskService) FetchTasks(ctx context.Context, filters TaskFilters, page int, pageSize int) ([]*Task, error) {
+	query := "SELECT id, title, description, status FROM tasks WHERE 1=1"
+	args := []any{}
+	argPos := 1
+
+	if filters.Status != nil {
+		query += fmt.Sprintf(" AND status = $%d", argPos)
+		args = append(args, *filters.Status)
+		argPos++
+	}
+
+	// pagination
+	offset := (page - 1) * pageSize
+	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argPos, argPos+1)
+	args = append(args, pageSize, offset)
+
+	rows, err := s.DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("error executing query: %w", err)
+	}
+	defer rows.Close()
+
+	var tasks []*Task
+	for rows.Next() {
+		var t Task
+		err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Status)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning row: %w", err)
+		}
+		tasks = append(tasks, &t)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating rows: %w", err)
+	}
+
 	return tasks, nil
 }
 
@@ -95,11 +142,60 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := db.PingContext(ctx); err != nil {
-		fmt.Printf("Unable to acces database %v\n", err)
+
+	// contexto só para o ping
+	pingCtx, pingCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer pingCancel()
+
+	if err := db.PingContext(pingCtx); err != nil {
+		fmt.Printf("unable to access database: %v\n", err)
 		return
 	}
-	fmt.Println("Hello task manager")
+
+	fmt.Println("connected to database")
+
+	service := NewTaskService(db)
+
+	// página 1
+	tasks1, err := service.FetchTasks(context.Background(), TaskFilters{}, 1, 10)
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
+		return
+	}
+	fmt.Println("--- Página 1 ---")
+	for _, t := range tasks1 {
+		fmt.Printf("ID: %d | Title: %s | Status: %v\n", t.ID, t.Title, *t.Status)
+	}
+
+	// página 2
+	tasks2, err := service.FetchTasks(context.Background(), TaskFilters{}, 2, 10)
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
+		return
+	}
+	fmt.Println("--- Página 2 ---")
+	for _, t := range tasks2 {
+		fmt.Printf("ID: %d | Title: %s | Status: %v\n", t.ID, t.Title, *t.Status)
+	}
+
+	// página 1 filtrado por status "done"
+	status := "done"
+	tasksStatus, err := service.FetchTasks(context.Background(), TaskFilters{Status: &status}, 1, 10)
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
+		return
+	}
+	fmt.Println("--- Página 1 com status done ---")
+	for _, t := range tasksStatus {
+		fmt.Printf("ID: %d | Title: %s | Status: %v\n", t.ID, t.Title, *t.Status)
+	}
+
+	task, err := service.ListTasks(pingCtx)
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
+		return
+	}
+	for _, t := range task {
+		fmt.Printf("ID: %d | Title: %s | Status: %v\n", t.ID, t.Title, *t.Status)
+	}
 }
