@@ -156,40 +156,6 @@ func main() {
 
 	service := NewTaskService(db)
 
-	// página 1
-	tasks1, err := service.FetchTasks(context.Background(), TaskFilters{}, 1, 10)
-	if err != nil {
-		fmt.Printf("error: %v\n", err)
-		return
-	}
-	fmt.Println("--- Página 1 ---")
-	for _, t := range tasks1 {
-		fmt.Printf("ID: %d | Title: %s | Status: %v\n", t.ID, t.Title, *t.Status)
-	}
-
-	// página 2
-	tasks2, err := service.FetchTasks(context.Background(), TaskFilters{}, 2, 10)
-	if err != nil {
-		fmt.Printf("error: %v\n", err)
-		return
-	}
-	fmt.Println("--- Página 2 ---")
-	for _, t := range tasks2 {
-		fmt.Printf("ID: %d | Title: %s | Status: %v\n", t.ID, t.Title, *t.Status)
-	}
-
-	// página 1 filtrado por status "done"
-	status := "done"
-	tasksStatus, err := service.FetchTasks(context.Background(), TaskFilters{Status: &status}, 1, 10)
-	if err != nil {
-		fmt.Printf("error: %v\n", err)
-		return
-	}
-	fmt.Println("--- Página 1 com status done ---")
-	for _, t := range tasksStatus {
-		fmt.Printf("ID: %d | Title: %s | Status: %v\n", t.ID, t.Title, *t.Status)
-	}
-
 	task, err := service.ListTasks(pingCtx)
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
