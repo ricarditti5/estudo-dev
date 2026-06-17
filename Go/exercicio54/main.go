@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -14,11 +15,20 @@ func SayMayName(s string) {
 }
 
 func main() {
-	var mayName string = "Ricardo"
 	startNow := time.Now()
-	fmt.Println("Without gourootines---------------------------------------- ")
+	var (
+		mayName string = "Ricardo"
+		wg      sync.WaitGroup
+	)
+	fmt.Println("With gourootines---------------------------------------- ")
 	for i := 0; i < 5; i++ {
-		SayMayName(mayName)
+		wg.Add(1)
+		go func() {
+			SayMayName(mayName)
+			defer wg.Done()
+		}()
 	}
+	wg.Wait()
+
 	fmt.Println("Operation time: ", time.Since(startNow))
 }
