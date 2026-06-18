@@ -4,14 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"os"
 	"time"
 
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
-
-type TaskService struct {
-	DB *sql.DB
-}
 
 type Task struct {
 	ID          int
@@ -32,13 +30,17 @@ func (e *ErrTaskNotFound) Error() string {
 	return fmt.Sprintf("task with id %d not found", e.ID)
 }
 
-func NewTaskService(db *sql.DB) *TaskService {
+type TaskService struct {
+	DB *pgxpool.Pool
+}
+
+func NewTaskService(db *pgxpool.Pool) *TaskService {
 	return &TaskService{DB: db}
 }
 
 func (s *TaskService) GetTask(ctx context.Context, id int) (*Task, error) {
 	var t Task
-	err := s.DB.QueryRowContext(ctx, "SELECT id, title, description, status FROM tasks WHERE id = $1", id).Scan(&t.ID, &t.Title, &t.Description, &t.Status)
+	err := s.DB.QueryRow(ctx, "SELECT id, title, description, status FROM tasks WHERE id = $1", id).Scan(&t.ID, &t.Title, &t.Description, &t.Status)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, &ErrTaskNotFound{ID: id}
@@ -50,7 +52,8 @@ func (s *TaskService) GetTask(ctx context.Context, id int) (*Task, error) {
 
 func (s *TaskService) CreateTask(ctx context.Context, title string, description string) (int, error) {
 	var id int
-	err := s.DB.QueryRowContext(ctx, "INSERT INTO tasks (title, description) VALUES ($1, $2) RETURNING id", title, description).Scan(&id)
+	//o context ja vem implementado no struct pelo pgxPool.Pool
+	err := s.DB.QueryRow(ctx, "INSERT INTO tasks (title, description) VALUES ($1, $2) RETURNING id", title, description).Scan(&id)
 	if err != nil {
 		return 0, fmt.Errorf("could not insert task: %w", err)
 	}
@@ -58,15 +61,13 @@ func (s *TaskService) CreateTask(ctx context.Context, title string, description 
 }
 
 func (s *TaskService) UpdateTask(ctx context.Context, id int, title string) error {
-	result, err := s.DB.ExecContext(ctx, "UPDATE tasks SET title = $1 WHERE id = $2", title, id)
+	//o context ja vem implementado no struct pelo pgxPool.Pool
+	result, err := s.DB.Exec(ctx, "UPDATE tasks SET title = $1 WHERE id = $2", title, id)
 	if err != nil {
 		return err
 	}
 
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
+	rows := result.RowsAffected() //so retorna o int64 sem o error
 	if rows == 0 {
 		return fmt.Errorf("no task found with id %d", id)
 	}
@@ -74,7 +75,8 @@ func (s *TaskService) UpdateTask(ctx context.Context, id int, title string) erro
 }
 
 func (s *TaskService) ListTasks(ctx context.Context) ([]Task, error) {
-	rows, err := s.DB.QueryContext(ctx, "SELECT id, title, description, status FROM tasks ORDER BY status = 'done' ASC")
+	//o context ja vem implementado no struct pelo pgxPool.Pool
+	rows, err := s.DB.Query(ctx, "SELECT id, title, description, status FROM tasks ORDER BY status = 'done' ASC")
 	if err != nil {
 		return nil, fmt.Errorf("error executing query: %w", err)
 	}
@@ -113,7 +115,7 @@ func (s *TaskService) FetchTasks(ctx context.Context, filters TaskFilters, page 
 	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argPos, argPos+1)
 	args = append(args, pageSize, offset)
 
-	rows, err := s.DB.QueryContext(ctx, query, args...)
+	rows, err := s.DB.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("error executing query: %w", err)
 	}
@@ -137,8 +139,8 @@ func (s *TaskService) FetchTasks(ctx context.Context, filters TaskFilters, page 
 }
 
 func main() {
-	connStr := "user=postgres password=King dbname=task_manager sslmode=disable"
-	db, err := sql.Open("postgres", connStr)
+
+	db, err := pgxpool.New(context.Background(), os.Getenv("CONNECTION_STRING"))
 	if err != nil {
 		panic(err)
 	}
@@ -147,7 +149,7 @@ func main() {
 	pingCtx, pingCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer pingCancel()
 
-	if err := db.PingContext(pingCtx); err != nil {
+	if err := db.Ping(pingCtx); err != nil {
 		fmt.Printf("unable to access database: %v\n", err)
 		return
 	}
