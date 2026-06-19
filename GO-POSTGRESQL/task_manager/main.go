@@ -9,6 +9,7 @@ import (
 
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 )
 
 type Task struct {
@@ -76,7 +77,7 @@ func (s *TaskService) UpdateTask(ctx context.Context, id int, title string) erro
 
 func (s *TaskService) ListTasks(ctx context.Context) ([]Task, error) {
 	//o context ja vem implementado no struct pelo pgxPool.Pool
-	rows, err := s.DB.Query(ctx, "SELECT id, title, description, status FROM tasks ORDER BY status = 'done' ASC")
+	rows, err := s.DB.Query(ctx, "SELECT id, title, description, status FROM tasks ORDER BY id ASC")
 	if err != nil {
 		return nil, fmt.Errorf("error executing query: %w", err)
 	}
@@ -140,6 +141,11 @@ func (s *TaskService) FetchTasks(ctx context.Context, filters TaskFilters, page 
 
 func main() {
 
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println(".env doesn't exist.")
+		return
+	}
 	db, err := pgxpool.New(context.Background(), os.Getenv("CONNECTION_STRING"))
 	if err != nil {
 		panic(err)
