@@ -12,23 +12,48 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type RoleUser string
+
+const (
+	UserAdmin RoleUser = "admin"
+	UserUser  RoleUser = "user"
+)
+
 type Task struct {
 	ID          int
 	Title       string
 	Description string
 	Status      *string
+	Tags        []string
+	user_id     *string
+}
+
+type User struct {
+	ID   string
+	Nome string
+	Role RoleUser
 }
 
 type TaskFilters struct {
 	Status *string
 }
 
+type ErrUserNotFound struct {
+	ID string
+}
+
 type ErrTaskNotFound struct {
 	ID int
 }
 
+// If task not found
 func (e *ErrTaskNotFound) Error() string {
 	return fmt.Sprintf("task with id %d not found", e.ID)
+}
+
+// If user not found
+func (u *ErrUserNotFound) Error() string {
+	return fmt.Sprintf("user with id %s not found", u.ID)
 }
 
 type TaskService struct {
@@ -39,9 +64,18 @@ func NewTaskService(db *pgxpool.Pool) *TaskService {
 	return &TaskService{DB: db}
 }
 
+type UserService struct {
+	DB *pgxpool.Pool
+}
+
+func NewUserService(db *pgxpool.Pool) *UserService {
+	return &UserService{DB: db}
+}
+
+// Pegar as TASKS
 func (s *TaskService) GetTask(ctx context.Context, id int) (*Task, error) {
 	var t Task
-	err := s.DB.QueryRow(ctx, "SELECT id, title, description, status FROM tasks WHERE id = $1", id).Scan(&t.ID, &t.Title, &t.Description, &t.Status)
+	err := s.DB.QueryRow(ctx, "SELECT id, title, description, status, tags, user_id status FROM tasks WHERE id = $1", id).Scan(&t.ID, &t.Title, &t.Description, &t.Status, &t.Tags, &t.user_id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, &ErrTaskNotFound{ID: id}
@@ -51,12 +85,33 @@ func (s *TaskService) GetTask(ctx context.Context, id int) (*Task, error) {
 	return &t, nil
 }
 
-func (s *TaskService) CreateTask(ctx context.Context, title string, description string) (int, error) {
+// Pegar os USERS
+func (s *UserService) GetUser(ctx context.Context, id string) (*User, error) {
+	var u User
+	err := s.DB.QueryRow(ctx, "SELECT id, nome, role FROM users WHERE id = $1", id).Scan(&u.ID, &u.Nome, &u.Role)
+	if err != nil {
+		return nil, &ErrUserNotFound{ID: id} // ErrUserNotFound também precisa de ID string agora
+	}
+	return &u, nil
+}
+
+// Pegar as TASKS
+func (s *TaskService) CreateTask(ctx context.Context, title string, description string, tags []string, user_id string) (int, error) {
 	var id int
+
 	//o context ja vem implementado no struct pelo pgxPool.Pool
-	err := s.DB.QueryRow(ctx, "INSERT INTO tasks (title, description) VALUES ($1, $2) RETURNING id", title, description).Scan(&id)
+	err := s.DB.QueryRow(ctx, "INSERT INTO tasks (title, description, tags, user_id) VALUES ($1, $2, $3, $4) RETURNING id", title, description, tags, user_id).Scan(&id)
 	if err != nil {
 		return 0, fmt.Errorf("could not insert task: %w", err)
+	}
+	return id, nil
+}
+
+func (s *UserService) CreateUser(ctx context.Context, nome string) (int, error) {
+	var id int
+	err := s.DB.QueryRow(ctx, "INSERT INTO users (nome) VALUES ($1) RETURNING id").Scan(&id)
+	if err != nil {
+		return 0, fmt.Errorf("could not insert user:%w", err)
 	}
 	return id, nil
 }
@@ -75,9 +130,21 @@ func (s *TaskService) UpdateTask(ctx context.Context, id int, title string) erro
 	return nil
 }
 
+func (s *UserService) UpdateUser(ctx context.Context, id int, nome string) error {
+	result, err := s.DB.Exec(ctx, "UPDATE users SET nome = $1 WHERE id = $2", nome, id)
+	if err != nil {
+		return err
+	}
+	rows := result.RowsAffected()
+	if rows == 0 {
+		return fmt.Errorf("no user found with id %d", id)
+	}
+	return nil
+}
+
 func (s *TaskService) ListTasks(ctx context.Context) ([]Task, error) {
 	//o context ja vem implementado no struct pelo pgxPool.Pool
-	rows, err := s.DB.Query(ctx, "SELECT id, title, description, status FROM tasks ORDER BY id ASC")
+	rows, err := s.DB.Query(ctx, "SELECT id, title, description, status, tags, user_id FROM tasks ORDER BY id ASC")
 	if err != nil {
 		return nil, fmt.Errorf("error executing query: %w", err)
 	}
@@ -86,7 +153,7 @@ func (s *TaskService) ListTasks(ctx context.Context) ([]Task, error) {
 	var tasks []Task
 	for rows.Next() {
 		var t Task
-		err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Status)
+		err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Status, &t.Tags, &t.user_id)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning row: %w", err)
 		}
@@ -100,8 +167,29 @@ func (s *TaskService) ListTasks(ctx context.Context) ([]Task, error) {
 	return tasks, nil
 }
 
+func (s *UserService) ListUser(ctx context.Context) ([]User, error) {
+	rows, err := s.DB.Query(ctx, "SELECT id, nome, role FROM users ORDER by id ASC")
+	if err != nil {
+		return nil, fmt.Errorf("error executing query: %w", err)
+	}
+	defer rows.Close()
+	var users []User
+	for rows.Next() {
+		var t User
+		err := rows.Scan(&t.ID, &t.Nome, &t.Role)
+		if err != nil {
+			return nil, fmt.Errorf("error scaning row: %w", err)
+		}
+		users = append(users, t)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating row: %w", err)
+	}
+	return users, nil
+}
+
 func (s *TaskService) FetchTasks(ctx context.Context, filters TaskFilters, page int, pageSize int) ([]*Task, error) {
-	query := "SELECT id, title, description, status FROM tasks WHERE 1=1"
+	query := "SELECT id, title, description, status, tags, user_id FROM tasks WHERE 1=1"
 	args := []any{}
 	argPos := 1
 
@@ -125,7 +213,7 @@ func (s *TaskService) FetchTasks(ctx context.Context, filters TaskFilters, page 
 	var tasks []*Task
 	for rows.Next() {
 		var t Task
-		err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Status)
+		err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Status, &t.Tags, &t.user_id)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning row: %w", err)
 		}
@@ -162,6 +250,7 @@ func main() {
 
 	fmt.Println("connected to database")
 
+	userservice := NewUserService(db)
 	service := NewTaskService(db)
 
 	task, err := service.ListTasks(pingCtx)
@@ -170,6 +259,13 @@ func main() {
 		return
 	}
 	for _, t := range task {
-		fmt.Printf("ID: %d | Title: %s | Status: %v\n", t.ID, t.Title, *t.Status)
+		nomeUser := "Empty"
+		if t.user_id != nil {
+			u, err := userservice.GetUser(pingCtx, *t.user_id)
+			if err == nil {
+				nomeUser = u.Nome
+			}
+		}
+		fmt.Printf("ID: %d | Title: %s | Status: %v | Tags: %v | Created by: %v\n", t.ID, t.Title, *t.Status, t.Tags, nomeUser)
 	}
 }
