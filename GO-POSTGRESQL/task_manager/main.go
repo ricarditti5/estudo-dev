@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
@@ -15,8 +16,9 @@ import (
 type RoleUser string
 
 const (
-	UserAdmin RoleUser = "admin"
-	UserUser  RoleUser = "user"
+	UserAdmin             RoleUser = "admin"
+	UserUser              RoleUser = "user"
+	maxActiveTasksPerUser          = 3
 )
 
 type Task struct {
@@ -75,7 +77,7 @@ func NewUserService(db *pgxpool.Pool) *UserService {
 // Pegar as TASKS
 func (s *TaskService) GetTask(ctx context.Context, id int) (*Task, error) {
 	var t Task
-	err := s.DB.QueryRow(ctx, "SELECT id, title, description, status, tags, user_id status FROM tasks WHERE id = $1", id).Scan(&t.ID, &t.Title, &t.Description, &t.Status, &t.Tags, &t.user_id)
+	err := s.DB.QueryRow(ctx, "SELECT id, title, description, status, tags, user_id FROM tasks WHERE id = $1", id).Scan(&t.ID, &t.Title, &t.Description, &t.Status, &t.Tags, &t.user_id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, &ErrTaskNotFound{ID: id}
@@ -107,11 +109,11 @@ func (s *TaskService) CreateTask(ctx context.Context, title string, description 
 	return id, nil
 }
 
-func (s *UserService) CreateUser(ctx context.Context, nome string) (int, error) {
-	var id int
-	err := s.DB.QueryRow(ctx, "INSERT INTO users (nome) VALUES ($1) RETURNING id").Scan(&id)
+func (s *UserService) CreateUser(ctx context.Context, nome string) (string, error) {
+	var id string
+	err := s.DB.QueryRow(ctx, "INSERT INTO users (nome) VALUES ($1) RETURNING id").Scan(&id, nome)
 	if err != nil {
-		return 0, fmt.Errorf("could not insert user:%w", err)
+		return "invalid id", fmt.Errorf("could not insert user:%w", err)
 	}
 	return id, nil
 }
@@ -227,6 +229,40 @@ func (s *TaskService) FetchTasks(ctx context.Context, filters TaskFilters, page 
 	return tasks, nil
 }
 
+func (s *TaskService) CreateTaskWithQuota(ctx context.Context, userId string, title string, description string) (int, error) {
+
+	tx, err := s.DB.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable})
+	if err != nil {
+		return 0, fmt.Errorf("Error to conect: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	var count int
+	err = tx.QueryRow(ctx,
+		`SELECT COUNT(*) FROM tasks WHERE user_id = $1 AND status != 'done'`,
+		userId,
+	).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("count tasks: %w", err)
+	}
+
+	if count >= maxActiveTasksPerUser {
+		return 0, fmt.Errorf("usuário %s já atingiu o limite de %d tasks ativas", userId, maxActiveTasksPerUser)
+	}
+
+	var tskId int
+	err = tx.QueryRow(ctx, "INSERT INTO tasks (title, description, user_id) VALUES($1, $2, $3) RETURNING id", title, description, userId).Scan(&tskId)
+	if err != nil {
+		return 0, fmt.Errorf("Error to create task: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return 0, fmt.Errorf("commit tx: %w", err)
+	}
+
+	return tskId, nil
+}
+
 func main() {
 
 	err := godotenv.Load()
@@ -253,7 +289,16 @@ func main() {
 	userservice := NewUserService(db)
 	service := NewTaskService(db)
 
+	//alexandreID := "692920e0-8c85-4feb-a8c8-1cdd5b2a38fb"
 	task, err := service.ListTasks(pingCtx)
+	/*for i := 1; i < 4; i++ {
+		task, err := service.CreateTaskWithQuota(pingCtx, alexandreID, "Teste quota", "teste quota")
+		if err != nil {
+			fmt.Printf("tentativa %d: ERRO -> %v\n", i, err)
+		} else {
+			fmt.Printf("tentativa %d: OK -> task id %d criada\n", i, task)
+		}
+	}*/
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
 		return
