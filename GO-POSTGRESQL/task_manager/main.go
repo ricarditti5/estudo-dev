@@ -290,15 +290,15 @@ func main() {
 	service := NewTaskService(db)
 
 	//alexandreID := "692920e0-8c85-4feb-a8c8-1cdd5b2a38fb"
-	task, err := service.ListTasks(pingCtx)
-	/*for i := 1; i < 4; i++ {
-		task, err := service.CreateTaskWithQuota(pingCtx, alexandreID, "Teste quota", "teste quota")
+	ricardoID := "15d1cefa-ef63-4646-a451-af37e5fd7df7"
+
+	for i := 1; i < 4; i++ {
+		task, err := service.CreateTaskWithQuota(pingCtx, ricardoID, fmt.Sprintf("Teste quota nº %d", i), "teste quota")
 		if err != nil {
-			fmt.Printf("tentativa %d: ERRO -> %v\n", i, err)
-		} else {
-			fmt.Printf("tentativa %d: OK -> task id %d criada\n", i, task)
+			fmt.Printf("tentativa %d de criar a task %d: ERRO -> %v\n", i, task, err)
 		}
-	}*/
+	}
+	task, err := service.ListTasks(pingCtx)
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
 		return
