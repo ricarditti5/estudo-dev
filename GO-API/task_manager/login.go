@@ -57,41 +57,41 @@ func Login(db *pgxpool.Pool) http.HandlerFunc {
 		)
 
 		if err := json.NewDecoder(r.Body).Decode(&login); err != nil {
+			RespondError(w, http.StatusBadRequest, "Error to login")
 			fmt.Printf("Error to login: %v", err)
-			http.Error(w, "Error to login", http.StatusBadRequest)
 			return
 		}
 
 		if login.Email == "" {
-			http.Error(w, "Fild email empty", http.StatusBadRequest)
+			RespondError(w, http.StatusBadRequest, "Fild email empty")
 			fmt.Printf("Fild email empty")
 			return
 		} else if login.Password == "" {
-			http.Error(w, "Fild password empty", http.StatusBadRequest)
+			RespondError(w, http.StatusBadRequest, "Fild password empty")
 			fmt.Printf("Fild password empty")
 			return
 		}
 
-		err := db.QueryRow(r.Context(), "SELECT password_hash FROM users WHERE email = $1", login.Email).Scan(&reqData.PasswordHash)
+		err := db.QueryRow(r.Context(), "SELECT id, role, password_hash FROM users WHERE email = $1", login.Email).Scan(&reqData.ID, &reqData.Role, &reqData.PasswordHash)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) { //o errors.Is(compara o err que recebi da db com o erro sentinela)
 				RespondError(w, http.StatusUnauthorized, "Invalid credentials")
 				return
 			}
-			RespondError(w, http.StatusInternalServerError, "Wrong credentials")
+			RespondError(w, http.StatusInternalServerError, "Internal error")
 			fmt.Printf("Wrong credentials: %v", err)
 			return
 		}
 
 		pass := CheckPasswordHash(login.Password, reqData.PasswordHash)
 		if pass == false {
-			http.Error(w, "Wrong password", http.StatusBadRequest)
+			http.Error(w, "Wrong credentials", http.StatusBadRequest)
 			return
 		}
 
 		SecretKey, err := GenerateKey(reqData.ID, reqData.Role)
 		if err != nil {
-			RespondError(w, http.StatusBadRequest, "Invalid credentials")
+			RespondError(w, http.StatusInternalServerError, "Invalid credentials")
 			fmt.Printf("Error to with: %v", err)
 			return
 		}

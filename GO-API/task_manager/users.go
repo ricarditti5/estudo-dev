@@ -5,6 +5,7 @@ import (
 	//"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	//"github.com/jackc/pgx/v5"
 
@@ -43,19 +44,35 @@ func CreateUser(db *pgxpool.Pool) http.HandlerFunc {
 		var (
 			id  string
 			req UserService
+			ver Users
 		)
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "invalid request body", http.StatusBadRequest)
+			RespondError(w, http.StatusBadRequest, "invalid request body")
 			fmt.Printf("Erro to request: %v", err)
+			return
+		}
+
+		if strings.TrimSpace(req.Nome) == "" ||
+			strings.TrimSpace(req.Email) == "" ||
+			strings.TrimSpace(req.Password) == "" {
+			RespondError(w, http.StatusBadRequest, "All fields are required")
+			return
+		}
+
+		//fazer select para comaprar duplicate email do user e email da db
+		if req.Email == ver.Email {
+			RespondError(w, http.StatusBadRequest, "Email already exists")
 			return
 		}
 
 		PasswordHashed, err := HashPassword(req.Password)
 		if err != nil {
-			http.Error(w, "Error", http.StatusInternalServerError)
+			RespondError(w, http.StatusInternalServerError, "Error")
 			fmt.Printf("Erro to hash password: %v", err)
 			return
 		}
+		//status code errado no updateusers
+		//sem validação de campos copiar o do primeiro issue aqui
 		err = db.QueryRow(r.Context(), "INSERT INTO users(nome, email, password_hash) VALUES($1,$2,$3) RETURNING id", &req.Nome, &req.Email, PasswordHashed).Scan(&id)
 		if err != nil {
 			RespondError(w, http.StatusInternalServerError, "Error to create user")
@@ -80,11 +97,15 @@ func ListUsers(db *pgxpool.Pool) http.HandlerFunc {
 
 		for rows.Next() {
 			var u UserResponse
-			rows.Scan(&u.Nome, &u.Email, &u.Role)
+			err := rows.Scan(&u.Nome, &u.Email, &u.Role)
+			if err != nil {
+				RespondError(w, http.StatusInternalServerError, "Internal error-error to get task")
+			}
 			user = append(user, u)
 		}
 		//o encoder envia os dados diretamento em json para o w
 		if err := RespondJSON(w, http.StatusOK, user); err != nil {
+			RespondError(w, http.StatusInternalServerError, "Internal error, try again refreshing")
 			fmt.Printf("Error to encode data: %v", err)
 			return
 		}
@@ -98,8 +119,15 @@ func UpdateUsers(db *pgxpool.Pool) http.HandlerFunc {
 		id := r.PathValue("id")
 
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			RespondError(w, http.StatusInternalServerError, "Internal error")
+			RespondError(w, http.StatusBadRequest, "Invalid data")
 			fmt.Printf("Internal Error: %v", err)
+			return
+		}
+
+		if strings.TrimSpace(req.Nome) == "" ||
+			strings.TrimSpace(req.Email) == "" ||
+			strings.TrimSpace(req.Password) == "" {
+			RespondError(w, http.StatusBadRequest, "All fields are required")
 			return
 		}
 

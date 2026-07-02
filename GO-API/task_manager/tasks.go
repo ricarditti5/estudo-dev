@@ -33,11 +33,15 @@ func ListTask(db *pgxpool.Pool) http.HandlerFunc {
 
 		for rows.Next() {
 			var t Task
-			rows.Scan(&t.ID, &t.Title, &t.Description, &t.Status)
+			err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Status)
+			if err != nil {
+				RespondError(w, http.StatusInternalServerError, "Internal error-error to get task")
+			}
 			task = append(task, t)
 		}
 		//o encoder envia os dados diretamento em json para o w
 		if err := RespondJSON(w, http.StatusOK, task); err != nil {
+			RespondError(w, http.StatusInternalServerError, "Internal error, try again refreshing")
 			fmt.Printf("Error to encode data: %v", err)
 			return
 		}
@@ -84,6 +88,7 @@ func GetTask(db *pgxpool.Pool) http.HandlerFunc {
 			}
 		}
 		if err := RespondJSON(w, http.StatusOK, t); err != nil {
+			RespondError(w, http.StatusInternalServerError, "Internal error, try again refreshing")
 			fmt.Printf("Error to encode data: %v", err)
 			return
 		}
@@ -119,6 +124,7 @@ func UpdateTask(db *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		if err := RespondJSON(w, http.StatusOK, t); err != nil {
+			RespondError(w, http.StatusInternalServerError, "Internal error, try again refreshing")
 			fmt.Printf("Error to encode data: %v", err)
 			return
 		}
@@ -152,6 +158,7 @@ func DeleteTask(db *pgxpool.Pool) http.HandlerFunc {
 			fmt.Printf("no task founded with id: %d", idConv)
 		}
 		if err := RespondJSON(w, http.StatusOK, t); err != nil {
+			RespondError(w, http.StatusInternalServerError, "Internal error, try again refreshing")
 			fmt.Printf("Error to encode data: %v", err)
 			return
 		}
