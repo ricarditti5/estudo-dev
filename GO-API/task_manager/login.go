@@ -2,12 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
@@ -42,8 +44,7 @@ func GenerateKey(userID string, role Role) (string, error) {
 
 	FinalSecretKey, err := token.SignedString(convKey)
 	if err != nil {
-		fmt.Printf("Error to generate token: %v", err)
-		return "", nil
+		return "", fmt.Errorf("Error to generate token: %v", err)
 	}
 	return FinalSecretKey, nil
 }
@@ -73,8 +74,12 @@ func Login(db *pgxpool.Pool) http.HandlerFunc {
 
 		err := db.QueryRow(r.Context(), "SELECT password_hash FROM users WHERE email = $1", login.Email).Scan(&reqData.PasswordHash)
 		if err != nil {
-			http.Error(w, "Internal Error", http.StatusInternalServerError)
-			fmt.Printf("Internal Error: %v", err)
+			if errors.Is(err, pgx.ErrNoRows) { //o errors.Is(compara o err que recebi da db com o erro sentinela)
+				RespondError(w, http.StatusUnauthorized, "Invalid credentials")
+				return
+			}
+			RespondError(w, http.StatusInternalServerError, "Wrong credentials")
+			fmt.Printf("Wrong credentials: %v", err)
 			return
 		}
 
@@ -84,6 +89,15 @@ func Login(db *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
+		SecretKey, err := GenerateKey(reqData.ID, reqData.Role)
+		if err != nil {
+			RespondError(w, http.StatusBadRequest, "Invalid credentials")
+			fmt.Printf("Error to with: %v", err)
+			return
+		}
+		if err := RespondJSON(w, http.StatusOK, SecretKey); err != nil {
+			fmt.Printf("Error to encode data: %v", err)
+			return
+		}
 	}
 }

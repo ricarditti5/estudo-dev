@@ -2,11 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"fmt"
 	"strconv"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -19,7 +21,12 @@ type Task struct {
 
 func ListTask(db *pgxpool.Pool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rows, _ := db.Query(r.Context(), "SELECT id, title, description, status FROM tasks")
+		rows, err := db.Query(r.Context(), "SELECT id, title, description, status FROM tasks")
+		if err != nil {
+			RespondError(w, http.StatusInternalServerError, "Internal error, try again refreshing")
+			fmt.Printf("Erro to find tasks(don't try hack me XD): %v", err)
+			return
+		}
 		defer rows.Close()
 
 		var task []Task
@@ -30,7 +37,10 @@ func ListTask(db *pgxpool.Pool) http.HandlerFunc {
 			task = append(task, t)
 		}
 		//o encoder envia os dados diretamento em json para o w
-		json.NewEncoder(w).Encode(task)
+		if err := RespondJSON(w, http.StatusOK, task); err != nil {
+			fmt.Printf("Error to encode data: %v", err)
+			return
+		}
 	}
 }
 
@@ -45,7 +55,9 @@ func CreateTask(db *pgxpool.Pool) http.HandlerFunc {
 
 		err := db.QueryRow(r.Context(), "INSERT INTO tasks (title, description) VALUES($1,$2) RETURNING id", &t.Title, &t.Description).Scan(&id)
 		if err != nil {
-			fmt.Printf("could not insert task: %v", err)
+			RespondError(w, http.StatusInternalServerError, "Error to create tasks")
+			fmt.Printf("Erro to create tasks: %v", err)
+			return
 		}
 		w.WriteHeader(http.StatusCreated)
 	}
@@ -65,12 +77,14 @@ func GetTask(db *pgxpool.Pool) http.HandlerFunc {
 		}
 		err = db.QueryRow(r.Context(), "SELECT id, title, description, status FROM tasks WHERE id = $1", idConv).Scan(&t.ID, &t.Title, &t.Description, &t.Status)
 		if err != nil {
-			fmt.Printf("Error to execute query: %v", err)
-			return
+			if errors.Is(err, pgx.ErrNoRows) {
+				RespondError(w, http.StatusInternalServerError, "Error to get Tasks")
+				fmt.Printf("Error to execute query: %v", err)
+				return
+			}
 		}
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(t); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err := RespondJSON(w, http.StatusOK, t); err != nil {
+			fmt.Printf("Error to encode data: %v", err)
 			return
 		}
 	}
@@ -92,20 +106,22 @@ func UpdateTask(db *pgxpool.Pool) http.HandlerFunc {
 
 		result, err := db.Exec(r.Context(), "UPDATE tasks SET title = $1 ,description = $2, status = $3 WHERE id = $4", t.Title, t.Description, t.Status, idConv)
 		if err != nil {
+			RespondError(w, http.StatusInternalServerError, "Task doesn't exist")
 			fmt.Printf("Error to execute query: %v", err)
 			return
 		}
 
 		rows := result.RowsAffected()
 		if rows == 0 {
+			RespondError(w, http.StatusInternalServerError, "Error to update task")
 			fmt.Printf("no task founded with id: %d", idConv)
-		}
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(t); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusCreated)
+
+		if err := RespondJSON(w, http.StatusOK, t); err != nil {
+			fmt.Printf("Error to encode data: %v", err)
+			return
+		}
 	}
 }
 
@@ -125,19 +141,19 @@ func DeleteTask(db *pgxpool.Pool) http.HandlerFunc {
 
 		result, err := db.Exec(r.Context(), "DELETE FROM tasks WHERE id = $1", idConv)
 		if err != nil {
-			fmt.Printf("Error to execute query: %v", err)
+			RespondError(w, http.StatusBadRequest, "Error to delete task")
+			fmt.Printf("Invalid task: %v", err)
 			return
 		}
 
 		rows := result.RowsAffected()
 		if rows == 0 {
+			RespondError(w, http.StatusInternalServerError, "Error to delete task")
 			fmt.Printf("no task founded with id: %d", idConv)
 		}
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(t); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err := RespondJSON(w, http.StatusOK, t); err != nil {
+			fmt.Printf("Error to encode data: %v", err)
 			return
 		}
-		w.WriteHeader(http.StatusCreated)
 	}
 }

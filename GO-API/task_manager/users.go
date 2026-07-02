@@ -2,8 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	//"errors"
 	"fmt"
 	"net/http"
+
+	//"github.com/jackc/pgx/v5"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -55,7 +58,7 @@ func CreateUser(db *pgxpool.Pool) http.HandlerFunc {
 		}
 		err = db.QueryRow(r.Context(), "INSERT INTO users(nome, email, password_hash) VALUES($1,$2,$3) RETURNING id", &req.Nome, &req.Email, PasswordHashed).Scan(&id)
 		if err != nil {
-			http.Error(w, "Error to create user", http.StatusInternalServerError)
+			RespondError(w, http.StatusInternalServerError, "Error to create user")
 			fmt.Printf("Erro to create user: %v", err)
 			return
 		}
@@ -65,7 +68,12 @@ func CreateUser(db *pgxpool.Pool) http.HandlerFunc {
 
 func ListUsers(db *pgxpool.Pool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rows, _ := db.Query(r.Context(), "SELECT nome, email, role FROM users")
+		rows, err := db.Query(r.Context(), "SELECT nome, email, role FROM users")
+		if err != nil {
+			RespondError(w, http.StatusInternalServerError, "Internal error, try again refreshing")
+			fmt.Printf("Erro to find users(don't try hack me XD): %v", err)
+			return
+		}
 		defer rows.Close()
 
 		var user []UserResponse
@@ -75,8 +83,11 @@ func ListUsers(db *pgxpool.Pool) http.HandlerFunc {
 			rows.Scan(&u.Nome, &u.Email, &u.Role)
 			user = append(user, u)
 		}
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(user)
+		//o encoder envia os dados diretamento em json para o w
+		if err := RespondJSON(w, http.StatusOK, user); err != nil {
+			fmt.Printf("Error to encode data: %v", err)
+			return
+		}
 	}
 }
 
@@ -86,27 +97,29 @@ func UpdateUsers(db *pgxpool.Pool) http.HandlerFunc {
 		//pega o id passado no body ao chamar a rota
 		id := r.PathValue("id")
 
-		json.NewDecoder(r.Body).Decode(&req)
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			RespondError(w, http.StatusInternalServerError, "Internal error")
+			fmt.Printf("Internal Error: %v", err)
+			return
+		}
 
 		result, err := db.Exec(r.Context(), "UPDATE users SET nome = $1 ,email = $2 WHERE id = $3", &req.Nome, &req.Email, id)
 		if err != nil {
+			RespondError(w, http.StatusInternalServerError, "Error to update user")
 			fmt.Printf("Error to execute query: %v", err)
-			http.Error(w, "Error to update user", http.StatusInternalServerError)
 			return
 		}
 
 		rows := result.RowsAffected()
 		if rows == 0 {
+			RespondError(w, http.StatusInternalServerError, "Error to update user")
 			fmt.Printf("no task founded with id: %s", id)
-			http.Error(w, "Error to update user", http.StatusInternalServerError)
 			return
 		}
 
-		if err := json.NewEncoder(w).Encode(req); err != nil {
-			fmt.Printf("no task founded with id: %s", id)
-			http.Error(w, "Internal error", http.StatusInternalServerError)
+		if err := RespondJSON(w, http.StatusOK, req); err != nil {
+			fmt.Printf("Error to encode data: %v", err)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 	}
 }
