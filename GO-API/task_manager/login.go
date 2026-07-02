@@ -14,6 +14,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type TokenKey struct {
+	Token string `json:"token"`
+}
+
 type ClaimsToken struct {
 	UserID string `json:"user_id"`
 	Role   Role   `json:"role"` //get by users.go
@@ -85,17 +89,20 @@ func Login(db *pgxpool.Pool) http.HandlerFunc {
 
 		pass := CheckPasswordHash(login.Password, reqData.PasswordHash)
 		if pass == false {
-			http.Error(w, "Wrong credentials", http.StatusBadRequest)
+			RespondError(w, http.StatusUnauthorized, "Wrong credentials")
 			return
 		}
 
 		SecretKey, err := GenerateKey(reqData.ID, reqData.Role)
 		if err != nil {
-			RespondError(w, http.StatusInternalServerError, "Invalid credentials")
+			RespondError(w, http.StatusInternalServerError, "Internal error")
 			fmt.Printf("Error to with: %v", err)
 			return
 		}
-		if err := RespondJSON(w, http.StatusOK, SecretKey); err != nil {
+		if err := RespondJSON(w, http.StatusOK, TokenKey{
+			Token: SecretKey,
+		}); err != nil {
+			RespondError(w, http.StatusInternalServerError, "Internal error")
 			fmt.Printf("Error to encode data: %v", err)
 			return
 		}

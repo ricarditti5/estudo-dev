@@ -23,7 +23,7 @@ func main() {
 	mux.HandleFunc("GET /tasks/{id}", GetTask(db))
 	//Update
 	mux.HandleFunc("PUT /tasks/{id}", UpdateTask(db))
-	mux.HandleFunc("PUT /users/{id}", UpdateUsers(db))
+	mux.HandleFunc("PATCH /users/{id}", UpdateUsers(db))
 
 	//Delete by id
 	mux.HandleFunc("DELETE /tasks/{id}", DeleteTask(db))
