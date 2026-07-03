@@ -1,1 +1,17 @@
-# Only to format directory correcty
+# GO-API
+
+Projetos de API RESTful em Go com conexão a PostgreSQL.
+
+## task_manager/
+
+API de gestão de tarefas e utilizadores com:
+
+- CRUD de tasks e users
+- Autenticação JWT com bcrypt
+- Logs estruturados (slog)
+- Tracing com OpenTelemetry
+- Tratamento de erros consistente (JSON)
+- Middleware de logging com request ID
+
+`task_manager/README.md` — documentação completa
+`task_manager/NOTION_ANOTACOES.md` — versão resumida para Notion

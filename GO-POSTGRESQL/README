@@ -1,6 +1,22 @@
-# PostgreSQL with Golang
+# PostgreSQL com Golang
 
-In this module i learn how to work with PostgreSQL using the programing language go/golang
+Estudo de integração entre Go e PostgreSQL.
 
-## First connection succefull
+## Conteúdo
+
+### exercicio1
+Conexão básica a PostgreSQL usando `database/sql` com driver `pgx`.
+- `sql.Open`, `db.Ping`, `defer db.Close()`
+
+### exercicio2
+Leitura de ficheiro SQL do disco e execução com driver `lib/pq`.
+- `os.ReadFile`, `db.Exec`, tratamento de erores sem `panic`
+
+### task_manager/
+Projeto de gestão de tarefas com autenticação, usando `pgxpool` para gestão de conexões.
+- `migration.sql` — esquema da base de dados
+- `.env` — configuração de conexão
+
+## Primeira conexão bem sucedida
+
 ![alt text](firstConn.png)

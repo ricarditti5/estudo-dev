@@ -1,10 +1,10 @@
 # Estudo de Programação Web - React
 
-## 📚 Sobre o Repositório
+## Sobre o Repositório
 
 Este repositório foi criado com o objetivo de documentar e praticar meus conhecimentos e aprendizados sobre as tecnologias JavaScript, com foco especial em **React**. Aqui você encontrará projetos práticos, exercícios e exemplos que demonstram a evolução do aprendizado e a aplicação dos conceitos estudados.
 
-## 🎯 Objetivo
+## Objetivo
 
 O propósito principal deste repositório é:
 - **Praticar** conceitos fundamentais e avançados de React
@@ -12,7 +12,7 @@ O propósito principal deste repositório é:
 - **Criar** projetos práticos que consolidem o conhecimento adquirido
 - **Compartilhar** exemplos de código e soluções encontradas durante os estudos
 
-## 🚀 Projetos Práticos
+## Projetos Práticos
 
 ### Components-1
 
@@ -113,7 +113,21 @@ Este projeto foca em:
 
 Para mais detalhes, consulte a [documentação do Props-1](./Props-1/Doc.md).
 
-## 🛠️ Tecnologias
+### Props-2
+
+Segundo projeto focado em props, com destaque para destructuring e renderização de listas.
+
+**Localização**: `Props-2/`
+
+Este projeto foca em:
+- Destructuring de props na assinatura da função
+- Renderização de listas com `.map()`
+- Separação de lógica em múltiplos componentes
+- Reutilização de componentes com dados diferentes
+
+Para mais detalhes, consulte a [documentação do Props-2](./Props-2/Doc.md).
+
+## Tecnologias
 
 Este repositório utiliza principalmente:
 - **React** - Biblioteca JavaScript para construção de interfaces de usuário
@@ -131,11 +145,11 @@ React/
 ├── Components-5/      # Event Listeners
 ├── overview-components/ # Resumo Geral
 ├── Props-1/           # Entendendo Props
-├── README-REACT.md    # Este arquivo
-└── [outros projetos]  # Projetos futuros serão adicionados aqui
+├── Props-2/           # Props com destructuring e listas
+└── README-REACT.md    # Este arquivo
 ```
 
-## 📖 Como Usar
+## Como Usar
 
 Cada projeto prático possui sua própria documentação no arquivo `Doc.md` dentro do respectivo diretório. Para executar um projeto:
 
@@ -143,7 +157,7 @@ Cada projeto prático possui sua própria documentação no arquivo `Doc.md` den
 2. Instale as dependências: `npm install`
 3. Execute o servidor de desenvolvimento: `npm run dev`
 
-## 🎓 Aprendizado Contínuo
+## Aprendizado Contínuo
 
 Este repositório está em constante evolução, refletindo o progresso contínuo no aprendizado de React e tecnologias relacionadas. Novos projetos e conceitos serão adicionados conforme o conhecimento avança.
 
