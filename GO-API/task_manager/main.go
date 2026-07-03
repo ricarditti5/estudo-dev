@@ -12,7 +12,7 @@ func main() {
 	port := 8080
 	mux := http.NewServeMux()
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	db, err := ConnectDB()
+	db, err := ConnectDB(logger)
 	if err != nil {
 		logger.Error("error to connect database", "errors", err)
 		os.Exit(1)

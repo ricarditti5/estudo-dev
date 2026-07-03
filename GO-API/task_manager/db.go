@@ -10,8 +10,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func ConnectDB() (*pgxpool.Pool, error) {
-	var logger *slog.Logger
+func ConnectDB(logger *slog.Logger) (*pgxpool.Pool, error) {
 	err := godotenv.Load()
 	if err != nil {
 		logger.Error(".env doesn't exist.", "errors", err)
