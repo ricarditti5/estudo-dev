@@ -6,13 +6,11 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joho/godotenv"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -35,13 +33,10 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-func GenerateKey(userID string, role Role) (string, error) {
-	err := godotenv.Load()
-	if err != nil {
-		return "", fmt.Errorf(".env doesn't exist.")
+func GenerateKey(cfg *Config, userID string, role Role) (string, error) {
+	if cfg == nil {
+		return "", fmt.Errorf("config cannot be nil")
 	}
-	SecretKey := os.Getenv("SECRET_KEY")
-
 	claims := ClaimsToken{
 		UserID: userID,
 		Role:   role,
@@ -50,7 +45,7 @@ func GenerateKey(userID string, role Role) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	convKey := []byte(SecretKey)
+	convKey := []byte(cfg.JWTSecret)
 
 	FinalSecretKey, err := token.SignedString(convKey)
 	if err != nil {
@@ -59,7 +54,7 @@ func GenerateKey(userID string, role Role) (string, error) {
 	return FinalSecretKey, nil
 }
 
-func Login(db *pgxpool.Pool, logger *slog.Logger) http.HandlerFunc {
+func Login(cfg *Config, db *pgxpool.Pool, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, span := loginTracer.Start(r.Context(), "Login.Login")
 		defer span.End()
@@ -116,7 +111,7 @@ func Login(db *pgxpool.Pool, logger *slog.Logger) http.HandlerFunc {
 			return
 		}
 
-		SecretKey, err := GenerateKey(reqData.ID, reqData.Role)
+		SecretKey, err := GenerateKey(cfg, reqData.ID, reqData.Role)
 		if err != nil {
 			RespondError(w, http.StatusInternalServerError, "Internal error")
 			logger.Error("Error to with", "errors", err, "request_id", requestID)

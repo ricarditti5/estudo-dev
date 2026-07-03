@@ -9,10 +9,16 @@ import (
 
 func main() {
 
-	port := 8080
 	mux := http.NewServeMux()
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	db, err := ConnectDB(logger)
+
+	cfg, err := LoadConfig(logger)
+	if err != nil {
+		logger.Error("Error to load .env", "error", err)
+		os.Exit(1)
+	}
+
+	db, err := ConnectDB(cfg)
 	if err != nil {
 		logger.Error("error to connect database", "errors", err)
 		os.Exit(1)
@@ -44,11 +50,11 @@ func main() {
 	mux.HandleFunc("DELETE /tasks/{id}", DeleteTask(db, logger))
 
 	//Login
-	mux.HandleFunc("POST /login", Login(db, logger))
+	mux.HandleFunc("POST /login", Login(cfg, db, logger))
 
 	loggerMux := LoggingMiddleware(logger)(mux)
-	logger.Info("-Server runnig...", "port", port)
-	if err := http.ListenAndServe(":8080", loggerMux); err != nil {
+	logger.Info("-Server runnig...", "port", cfg.PORT)
+	if err := http.ListenAndServe(":"+cfg.PORT, loggerMux); err != nil {
 		logger.Error("error to innicialize server", "errors", err)
 		os.Exit(1)
 	}
