@@ -1,2 +1,4 @@
 *.exe
 .env
+
+NOTION_ANOTACOES.md
