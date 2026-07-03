@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -10,9 +11,10 @@ import (
 )
 
 func ConnectDB() (*pgxpool.Pool, error) {
+	var logger *slog.Logger
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Println(".env doesn't exist.")
+		logger.Error(".env doesn't exist.", "errors", err)
 		return nil, fmt.Errorf("Error to load .env: %v", err)
 	}
 	pool, err := pgxpool.New(context.Background(), os.Getenv("DATA_BASE_URL"))

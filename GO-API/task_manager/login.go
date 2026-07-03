@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -53,8 +54,13 @@ func GenerateKey(userID string, role Role) (string, error) {
 	return FinalSecretKey, nil
 }
 
-func Login(db *pgxpool.Pool) http.HandlerFunc {
+func Login(db *pgxpool.Pool, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		requestID, ok := r.Context().Value(requestIDKey).(string)
+		if !ok {
+			requestID = "unknown"
+		}
+
 		var (
 			login   LoginRequest
 			reqData Users
@@ -62,17 +68,17 @@ func Login(db *pgxpool.Pool) http.HandlerFunc {
 
 		if err := json.NewDecoder(r.Body).Decode(&login); err != nil {
 			RespondError(w, http.StatusBadRequest, "Error to login")
-			fmt.Printf("Error to login: %v", err)
+			logger.Error("Error to login", "errors", err, "request_id", requestID)
 			return
 		}
 
 		if login.Email == "" {
 			RespondError(w, http.StatusBadRequest, "Fild email empty")
-			fmt.Printf("Fild email empty")
+			logger.Error("Fild email is empty", "request_id", requestID)
 			return
 		} else if login.Password == "" {
 			RespondError(w, http.StatusBadRequest, "Fild password empty")
-			fmt.Printf("Fild password empty")
+			logger.Error("Fild password is empty", "request_id", requestID)
 			return
 		}
 
@@ -83,7 +89,7 @@ func Login(db *pgxpool.Pool) http.HandlerFunc {
 				return
 			}
 			RespondError(w, http.StatusInternalServerError, "Internal error")
-			fmt.Printf("Wrong credentials: %v", err)
+			logger.Error("Wrong credentials", "errors", err, "request_id", requestID)
 			return
 		}
 
@@ -96,14 +102,14 @@ func Login(db *pgxpool.Pool) http.HandlerFunc {
 		SecretKey, err := GenerateKey(reqData.ID, reqData.Role)
 		if err != nil {
 			RespondError(w, http.StatusInternalServerError, "Internal error")
-			fmt.Printf("Error to with: %v", err)
+			logger.Error("Error to with", "errors", err, "request_id", requestID)
 			return
 		}
 		if err := RespondJSON(w, http.StatusOK, TokenKey{
 			Token: SecretKey,
 		}); err != nil {
 			RespondError(w, http.StatusInternalServerError, "Internal error")
-			fmt.Printf("Error to encode data: %v", err)
+			logger.Error("Error to encode data", "errors", err, "request_id", requestID)
 			return
 		}
 	}

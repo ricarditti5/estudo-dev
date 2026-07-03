@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -43,15 +43,19 @@ type MessageJSON struct {
 	Message string
 }
 
-func CreateUser(db *pgxpool.Pool) http.HandlerFunc {
+func CreateUser(db *pgxpool.Pool, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		requestID, ok := r.Context().Value(requestIDKey).(string)
+		if !ok {
+			requestID = "unknown"
+		}
 		var (
 			id  string
 			req UserService
 		)
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			RespondError(w, http.StatusBadRequest, "invalid request body")
-			fmt.Printf("Erro to request: %v", err)
+			logger.Error("Erro to request", "error", err, "request_id", requestID)
 			return
 		}
 
@@ -65,7 +69,7 @@ func CreateUser(db *pgxpool.Pool) http.HandlerFunc {
 		PasswordHashed, err := HashPassword(req.Password)
 		if err != nil {
 			RespondError(w, http.StatusInternalServerError, "Error")
-			fmt.Printf("Erro to hash password: %v", err)
+			logger.Error("Erro to hash password", "error", err, "request_id", requestID)
 			return
 		}
 
@@ -77,19 +81,23 @@ func CreateUser(db *pgxpool.Pool) http.HandlerFunc {
 				return
 			}
 			RespondError(w, http.StatusInternalServerError, "Error to create user")
-			fmt.Printf("Erro to create user: %v", err)
+			logger.Error("Erro to create user", "error", err, "request_id", requestID)
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
 	}
 }
 
-func ListUsers(db *pgxpool.Pool) http.HandlerFunc {
+func ListUsers(db *pgxpool.Pool, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		requestID, ok := r.Context().Value(requestIDKey).(string)
+		if !ok {
+			requestID = "unknown"
+		}
 		rows, err := db.Query(r.Context(), "SELECT nome, email, role FROM users")
 		if err != nil {
 			RespondError(w, http.StatusInternalServerError, "Internal error, try again refreshing")
-			fmt.Printf("Erro to find users(don't try hack me XD): %v", err)
+			logger.Error("Erro to find users(don't try hack me XD)", "error", err, "request_id", requestID)
 			return
 		}
 		defer rows.Close()
@@ -108,21 +116,25 @@ func ListUsers(db *pgxpool.Pool) http.HandlerFunc {
 		//o encoder envia os dados diretamento em json para o w
 		if err := RespondJSON(w, http.StatusOK, user); err != nil {
 			RespondError(w, http.StatusInternalServerError, "Internal error, try again refreshing")
-			fmt.Printf("Error to encode data: %v", err)
+			logger.Error("Error to encode data", "error", err, "request_id", requestID)
 			return
 		}
 	}
 }
 
-func UpdateUsers(db *pgxpool.Pool) http.HandlerFunc {
+func UpdateUsers(db *pgxpool.Pool, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		requestID, ok := r.Context().Value(requestIDKey).(string)
+		if !ok {
+			requestID = "unknown"
+		}
 		var req UserService
 		//pega o id passado no body ao chamar a rota
 		id := r.PathValue("id")
 
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			RespondError(w, http.StatusBadRequest, "Invalid data")
-			fmt.Printf("Internal Error: %v", err)
+			logger.Error("Internal Error", "error", err, "request_id", requestID)
 			return
 		}
 
@@ -141,28 +153,28 @@ func UpdateUsers(db *pgxpool.Pool) http.HandlerFunc {
 			passwordHash, err = HashPassword(req.Password)
 			if err != nil {
 				RespondError(w, http.StatusInternalServerError, "Unable to update password")
-				fmt.Printf("Error to update password: %v", err)
+				logger.Error("Error to update password", "error", err, "request_id", requestID)
 				return
 			}
 		}
 		result, err := db.Exec(r.Context(), "UPDATE users SET nome = COALESCE(NULLIF($1,''), nome), email = COALESCE(NULLIF($2,''), email), password_hash = COALESCE(NULLIF($3,''), password_hash) WHERE id = $4", req.Nome, req.Email, passwordHash, id)
 		if err != nil {
 			RespondError(w, http.StatusInternalServerError, "Error to update user")
-			fmt.Printf("Error to execute query: %v", err)
+			logger.Error("Error to execute query", "error", err, "request_id", requestID)
 			return
 		}
 
 		rows := result.RowsAffected()
 		if rows == 0 {
 			RespondError(w, http.StatusNotFound, "Error to update user")
-			fmt.Printf("no user founded with id: %s", id)
+			logger.Error("no user founded with id:", "id", id, "request_id", requestID)
 			return
 		}
 
 		if err := RespondJSON(w, http.StatusOK, MessageJSON{
 			Message: "Succes to update task",
 		}); err != nil {
-			fmt.Printf("Error to encode data: %v", err)
+			logger.Error("Error to encode data", "error", err, "request_id", requestID)
 			return
 		}
 	}
